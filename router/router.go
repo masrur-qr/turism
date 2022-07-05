@@ -1,11 +1,14 @@
 package router
 
 import (
+	"os"
+
 	"github.com/gin-gonic/gin"
 	"test.com/req/controllers"
 )
 
 func Routers() {
+	port := os.Getenv("PORT")
 	// """""""controllers"""""""
 	login := controllers.Login
 	signin := controllers.Signin
@@ -21,5 +24,5 @@ func Routers() {
 	router.POST("/signin",signin)
 	router.GET("/logout",logout)
 
-	router.Run(":5522")
+	router.Run(":" + port)
 }
