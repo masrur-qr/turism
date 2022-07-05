@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"time"
 
@@ -27,7 +28,7 @@ type userLog struct {
 var bindUser userLog
 
 func MongodbConnection(c *gin.Context){ 
-    clientOptions := options.Client().ApplyURI("mongodb://127.0.0.1:27017/?directConnection=true")
+    clientOptions := options.Client().ApplyURI("mongodb://mongodb2")
 
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
@@ -53,7 +54,15 @@ func Login(c *gin.Context) {
 	var userOne userLog
 	cur.Decode(&userOne)
 	if userOne.Email != "" && bindUser.Passsword == userOne.Passsword && userOne.Email == userOne.Email{
-		c.SetCookie("cookie",token.Genertetoken(),0,"/","",time.Now().Add(time.Minute*30),false,false)
+		cookie := http.Cookie{
+			Name:   "cookie",
+			Value:  token.Genertetoken(),
+			MaxAge: 0,
+			Expires: time.Now().Add(time.Minute*30),
+			Secure: false,
+			HttpOnly: false,
+		}
+		http.SetCookie(c.Writer,&cookie)
 		c.JSON(200, gin.H{
 			"status":"valid",
 			"username":userOne.Username,
@@ -94,7 +103,16 @@ func Signin(c *gin.Context){
 	}
 }
 func Logout(c *gin.Context){
-	c.SetCookie("cookie",token.Genertetoken(),0,"/","",time.Now().Add(time.Minute*-30),false,false)
+	// c.SetCookie("cookie",token.Genertetoken(),0,"/","",time.Now().Add(time.Minute*-30),false,false)
+	cookie := http.Cookie{
+		Name:   "cookie",
+		Value:  token.Genertetoken(),
+		MaxAge: 0,
+		Expires: time.Now().Add(time.Minute*-30),
+		Secure: false,
+		HttpOnly: false,
+	}
+	http.SetCookie(c.Writer,&cookie)
 }
 func Cors(c *gin.Context){
 	c.Writer.Header().Set("Access-Control-Allow-Origin", "http://" + host + ":5500")
